@@ -1,8 +1,15 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#pragma GCC diagnostic ignored "-fpermissive"
 
+#ifdef ESP8266
+// workaround for platformio, works correctly in Arduino IDE
+extern "C" {
+void rom_i2c_writeReg_Mask(int, int, int, int, int, int);
+}
+#endif
+
+#include <ESP8266WiFi.h>
 #include <NeoPixelBrightnessBus.h>
 
 #pragma GCC diagnostic pop
