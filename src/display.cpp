@@ -4,11 +4,13 @@
 
 #ifdef ESP8266
 // workaround for platformio, works correctly in Arduino IDE
+// definition from esp8266_undocumented.h
 extern "C" {
 void rom_i2c_writeReg_Mask(int, int, int, int, int, int);
 }
 #endif
 
+//#include <esp8266_undocumented.h>
 #include <ESP8266WiFi.h>
 #include <NeoPixelBrightnessBus.h>
 
