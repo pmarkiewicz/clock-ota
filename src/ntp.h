@@ -4,6 +4,6 @@
 uint32_t getTime(WiFiUDP& UDP);
 bool sendNTPpacket(WiFiUDP& UDP);
 
-const int UDP_PORT = 13003;
+const int UDP_PORT = 123;
 
 #endif

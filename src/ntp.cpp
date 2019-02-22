@@ -35,7 +35,7 @@ bool sendNTPpacket(WiFiUDP& UDP) {
   // Initialize values needed to form NTP request
   NTPBuffer[0] = 0b11100011;   // LI, Version, Mode
   // send a packet requesting a timestamp:
-  UDP.beginPacket(timeServerIP, UDP.localPort()); // NTP requests are to port 123
+  UDP.beginPacket(timeServerIP, UDP_PORT); // NTP requests are to port 123
   UDP.write(NTPBuffer, NTP_PACKET_SIZE);
   UDP.endPacket();
 

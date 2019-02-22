@@ -38,10 +38,12 @@ void startOTA() {
 
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
+    display_msg("OTA");
   });
 
   ArduinoOTA.onEnd([]() {
     Serial.println("\nEnd");
+    display_msg("END");
   });
 
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
@@ -50,11 +52,26 @@ void startOTA() {
 
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    if (error == OTA_AUTH_ERROR) {
+      Serial.println("Auth Failed");
+      display_msg("Auth");
+    }
+    else if (error == OTA_BEGIN_ERROR) {
+      Serial.println("Begin Failed");
+      display_msg("E be");
+    }
+    else if (error == OTA_CONNECT_ERROR) {
+      Serial.println("Connect Failed");
+      display_msg("E co");
+    }
+    else if (error == OTA_RECEIVE_ERROR) {
+      Serial.println("Receive Failed");
+      display_msg("E re");
+    }
+    else if (error == OTA_END_ERROR) {
+      Serial.println("End Failed");
+      display_msg("E en");
+    }
   });
 
   ArduinoOTA.begin();
@@ -65,14 +82,14 @@ void startOTA() {
 void setup() {
   Serial.begin(115200);         // Start the Serial communication to send messages to the computer
   delay(10);
+  display_init();
 
   startWiFi();
   startUDP();
   startOTA();
-  display_init();
 
-  pinMode(led, OUTPUT);
-  digitalWrite(led, 1);
+  //pinMode(led, OUTPUT);
+  //digitalWrite(led, 1);
 }
 
 void displayProgress() {
@@ -106,8 +123,8 @@ void updateTime(unsigned long time) {
 
 unsigned long previousTime = millis();
 
-const unsigned long intervalNTPTimeout = 10000;
-const unsigned long intervalNTPUpdate = 60000; // Request NTP time every minute
+const unsigned long intervalNTPTimeout = 30000;
+const unsigned long intervalNTPUpdate = 60000 * 60 * 12; // 12 hrs 
 unsigned long prevNTP = 0;
 unsigned long lastNTPResponse = 0;
 unsigned long lastNTPSend = 0;
@@ -126,8 +143,11 @@ void loop() {
   unsigned long currentMillis = millis();
 
   // start time update
-  if (ntp_state == not_started && currentMillis - lastNTPResponse > intervalNTPUpdate ) {
+  uint32_t dt = currentMillis - lastNTPResponse;
+  if (ntp_state == not_started && (timeUNIX == 0 || dt > intervalNTPUpdate) ) {
+    Serial.println("Sending NTP");
     if (sendNTPpacket(UDP)) {
+      Serial.println("NTP sent");
       ntp_state = started;
       lastNTPSend = currentMillis;
     }
@@ -135,25 +155,30 @@ void loop() {
 
   // wait for response
   if (ntp_state == started) {
-    timeUNIX = getTime(UDP);
-    if (timeUNIX) {
+    //Serial.println("NTP await");
+    uint32_t ntpTime = getTime(UDP);
+    if (ntpTime) {
+      Serial.print("NTP recived: ");
+      Serial.println(timeUNIX);
       ntp_state = not_started;
       lastNTPResponse = currentMillis;
+      timeUNIX = ntpTime;
+      Serial.println("received");
+      updateTime(timeUNIX);
     }
     else if (currentMillis - lastNTPSend > intervalNTPTimeout) {
+      Serial.println("NTP not recived");
       ntp_state = not_started;
     }
   }
 
-  if (currentMillis % 1000 == 0) {
-    if (timeUNIX == 0) {
-      displayProgress();
-    }
-    else {
-      unsigned long dt = (lastNTPResponse - currentMillis) / 1000;
-      unsigned long tm = timeUNIX + dt;
-      updateTime(tm);
-    }
+  if (timeUNIX == 0 && currentMillis % 1000 == 0) {
+    displayProgress();
+  }
+  if (timeUNIX != 0 && currentMillis % 10000 == 0) {
+    uint32_t dt = (currentMillis - lastNTPResponse) / 1000;
+    uint32_t tm = timeUNIX + dt;
+    updateTime(tm);
   }
 }
 
