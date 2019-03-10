@@ -11,7 +11,7 @@
 
 WiFiUDP UDP;                     // Create an instance of the WiFiUDP class to send and receive
 
-const byte led = 13;
+//const byte led = 13;
 
 void startWiFi() { // Try to connect to some given access points. Then wait for a connection
   WiFiManager wifiManager;
@@ -20,6 +20,7 @@ void startWiFi() { // Try to connect to some given access points. Then wait for 
   //wifiManager.resetSettings();
 
   wifiManager.autoConnect();
+  wifi_station_set_hostname("clock");
 
   Serial.println("WiFi connected");
 }
@@ -84,9 +85,12 @@ void setup() {
   delay(10);
   display_init();
 
+  display_msg("strt");
+  //fill_display();
   startWiFi();
   startUDP();
   startOTA();
+  delay(500);
 
   //pinMode(led, OUTPUT);
   //digitalWrite(led, 1);
@@ -138,6 +142,7 @@ NTPState ntp_state = not_started;
 uint32_t timeUNIX = 0;
 
 void loop() {
+
   ArduinoOTA.handle();
 
   unsigned long currentMillis = millis();
@@ -167,7 +172,7 @@ void loop() {
       updateTime(timeUNIX);
     }
     else if (currentMillis - lastNTPSend > intervalNTPTimeout) {
-      Serial.println("NTP not recived");
+      Serial.println("NTP not received");
       ntp_state = not_started;
     }
   }

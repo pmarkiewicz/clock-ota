@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <U8g2lib.h>
 
 U8G2_MAX7219_32X8_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ D6, /* data=*/ D8, /* cs=*/ D7, /* dc=*/ U8X8_PIN_NONE, /* reset=*/ U8X8_PIN_NONE);
@@ -29,7 +30,7 @@ int map_x(int x) {
 void display_init()
 {
   u8g2.begin();
-  u8g2.setFont(u8g2_font_amstrad_cpc_extended_8n  );  // choose a suitable font
+  u8g2.setFont(u8g2_font_amstrad_cpc_extended_8r);  // choose a suitable font
 }
 
 void spin()
@@ -92,6 +93,30 @@ void display_clean()
 }
 
 void display_msg(const char* msg) {
-  u8g2.drawStr(0, 8, msg);
+  char str[] = "    ";
+  char c;
+
+  strlcpy(str, msg, sizeof(str));
+  c = str[0];
+  str[0] = str[3];
+  str[3] = c;
+
+  c = str[1];
+  str[1] = str[2];
+  str[2] = c;
+  
+  u8g2.drawStr(0, 8, str);
+  u8g2.sendBuffer();  
+}
+
+void fill_display() {
+
+  for (int i = 0; i < 32; i++) {
+    for (int j=0; j < 8; j++) {
+      u8g2.drawPixel(i, j);
+    }
+  }
+
+  u8g2.sendBuffer();  
 }
 

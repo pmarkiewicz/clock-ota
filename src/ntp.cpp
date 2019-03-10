@@ -4,7 +4,7 @@
 
 #include "ntp.h"
 
-const char* NTPServerName = "time.nist.gov";
+const char* NTPServerName = "pool.ntp.org";
 
 const int NTP_PACKET_SIZE = 48;  // NTP time stamp is in the first 48 bytes of the message
 
@@ -28,6 +28,8 @@ uint32_t getTime(WiFiUDP& UDP) {
 bool sendNTPpacket(WiFiUDP& UDP) {
   IPAddress timeServerIP;
   if(!WiFi.hostByName(NTPServerName, timeServerIP)) { // Get the IP address of the NTP server
+    Serial.println("DNS");
+    WiFi.dnsIP().printTo(Serial);
     return false;
   }
 

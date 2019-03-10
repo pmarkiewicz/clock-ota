@@ -6,6 +6,7 @@ void display_clean();
 void display_time(int h);
 void display_msg(const char* msg);
 void render_time(int h, int m, int s);
+void fill_display();
 void spin();
 
 #endif
